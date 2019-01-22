@@ -16,7 +16,10 @@
       "paths": "src/**/*.scss"
     },
     "demo:js": {
-      "paths": "demo/src/**/*.js"
+      "paths": [
+        "demo/src/**/*.js",
+        "dist/**/*.js"
+      ]
     },
     "demo:css": {
       "paths": "demo/src/**/*.scss"
@@ -73,7 +76,7 @@
     }
   },
   "dependencies": {
-    "coffeekraken-sugar": "^1.0.45",
+    "coffeekraken-sugar": "^1.0.47",
     "lodash": "^4.17.11"
   },
   "devDependencies": {

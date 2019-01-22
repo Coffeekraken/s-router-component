@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-	<link rel="stylesheet" href="dist/css/style.css" />
-</head>
-<body>
+  <head>
+    <link rel="stylesheet" href="dist/css/style.css" />
+  </head>
+  <body>
+    <a href="/?query=hello" is="s-router" title="Welcome">Welcome</a>
+    <a href="/home" is="s-router" title="Home">Home</a>
+    <a href="/home/hello/world/" is="s-router" title="Home">Home params</a>
+    <a href="/about" is="s-router" title="About">About</a>
+    <a href="/contact" is="s-router" title="Contact">Contact</a>
+    <a href="/sitemap" is="s-router" title="Sitemap">Sitemap</a>
 
-  <a href="/home/hello/world" is="s-router" title="Home">Home</a>
-  <a href="/about" is="s-router" title="About">About</a>
-  <a href="/contact" is="s-router" title="Contact">Contact</a>
+    <div class="content"></div>
 
-  <div class="content"></div>
-
-	<script src="dist/js/app.js"></script>
-</body>
+    <script src="dist/js/app.js"></script>
+  </body>
 </html>
