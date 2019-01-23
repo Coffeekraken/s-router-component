@@ -176,6 +176,23 @@ SRouterComponent.on(
 
 > Each hooks can be marked as `async` or return simply a `Promise`. Be careful, use this if you know what you are doing... Introducing asyncronous tasks inside a router can lead to tricky issues to debug.
 
+### Generic hooks
+
+Some generic hooks can also been registered. Generic mean that these hooks will be called on every route change.
+Here's how to register these hooks:
+
+```js
+SRouterComponent.hooks({
+  before: (params, source) => {
+    // do something before every routes.
+    // if return false, will stop every routes to work
+  },
+  after: (params, source) => {
+    // do something after every routes.
+  }
+})
+```
+
 <a id="readme-lifecycle"></a>
 
 ## Change route lifecycle
