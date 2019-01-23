@@ -49,6 +49,38 @@ function _typeof(obj) {
   return _typeof(obj)
 }
 
+function _objectSpread(target) {
+  for (var i = 1; i < arguments.length; i++) {
+    var source = arguments[i] != null ? arguments[i] : {}
+    var ownKeys = Object.keys(source)
+    if (typeof Object.getOwnPropertySymbols === "function") {
+      ownKeys = ownKeys.concat(
+        Object.getOwnPropertySymbols(source).filter(function(sym) {
+          return Object.getOwnPropertyDescriptor(source, sym).enumerable
+        })
+      )
+    }
+    ownKeys.forEach(function(key) {
+      _defineProperty(target, key, source[key])
+    })
+  }
+  return target
+}
+
+function _defineProperty(obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true
+    })
+  } else {
+    obj[key] = value
+  }
+  return obj
+}
+
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
   try {
     var info = gen[key](arg)
@@ -212,6 +244,8 @@ var SRoute =
   })() // some internal variables
 
 var _routes = {}
+var _hooks = {} // save the generic hooks
+
 var _clickedItem = null // the last s-router link clicked
 
 var _previousRouteParamsSource = null // save the previous route
@@ -572,6 +606,20 @@ var SRouterComponent =
             return this
           }
           /**
+           * Specify some generic hooks like `before` and `after`
+           * @param    {Object}    hooks    An object of hooks
+           * @return    {SRouterComponent}    The SRouterComponent class to maintain chainability
+           */
+        },
+        {
+          key: "hooks",
+          value: function hooks(_hooks2) {
+            // save the hooks in the stack
+            _hooks = _objectSpread({}, _hooks, _hooks2) // maintain chainability
+
+            return this
+          }
+          /**
            * When the url has been updated either by a click on back button, or by a click on
            * an `s-router` link
            */
@@ -588,6 +636,7 @@ var SRouterComponent =
                   params,
                   queryString,
                   $source,
+                  genericBeforeResult,
                   beforeResult,
                   previousRouteLeaveResult
                 return regeneratorRuntime.wrap(
@@ -624,23 +673,23 @@ var SRouterComponent =
                             params.$hash = document.location.hash
                           } // save the $source of the change
 
-                          $source = _clickedItem // check if this route has a before hook
+                          $source = _clickedItem // check if this is a generic before hook
 
-                          if (!sroute.hooks.before) {
+                          if (!_hooks.before) {
                             _context2.next = 17
                             break
                           }
 
                           _context2.next = 12
-                          return sroute.hooks.before(
+                          return _hooks.before(
                             params,
                             $source || window.history
                           )
 
                         case 12:
-                          beforeResult = _context2.sent
+                          genericBeforeResult = _context2.sent
 
-                          if (!(beforeResult === false)) {
+                          if (!(genericBeforeResult === false)) {
                             _context2.next = 17
                             break
                           }
@@ -654,26 +703,21 @@ var SRouterComponent =
                           return _context2.abrupt("return")
 
                         case 17:
-                          if (
-                            !(
-                              _previousRouteParamsSource &&
-                              _previousRouteParamsSource.sroute.hooks.leave
-                            )
-                          ) {
+                          if (!sroute.hooks.before) {
                             _context2.next = 25
                             break
                           }
 
                           _context2.next = 20
-                          return _previousRouteParamsSource.sroute.hooks.leave(
-                            _previousRouteParamsSource.params,
-                            _previousRouteParamsSource.source || window.history
+                          return sroute.hooks.before(
+                            params,
+                            $source || window.history
                           )
 
                         case 20:
-                          previousRouteLeaveResult = _context2.sent
+                          beforeResult = _context2.sent
 
-                          if (!(previousRouteLeaveResult === false)) {
+                          if (!(beforeResult === false)) {
                             _context2.next = 25
                             break
                           }
@@ -687,6 +731,39 @@ var SRouterComponent =
                           return _context2.abrupt("return")
 
                         case 25:
+                          if (
+                            !(
+                              _previousRouteParamsSource &&
+                              _previousRouteParamsSource.sroute.hooks.leave
+                            )
+                          ) {
+                            _context2.next = 33
+                            break
+                          }
+
+                          _context2.next = 28
+                          return _previousRouteParamsSource.sroute.hooks.leave(
+                            _previousRouteParamsSource.params,
+                            _previousRouteParamsSource.source || window.history
+                          )
+
+                        case 28:
+                          previousRouteLeaveResult = _context2.sent
+
+                          if (!(previousRouteLeaveResult === false)) {
+                            _context2.next = 33
+                            break
+                          }
+
+                          // flag the update as minor
+                          // to avoid triggering an actual route change
+                          _minorChange = true // go back in history
+
+                          window.history.go(-1) // stop here
+
+                          return _context2.abrupt("return")
+
+                        case 33:
                           // save the previous route
                           _previousRouteParamsSource = {
                             source: $source,
@@ -703,25 +780,34 @@ var SRouterComponent =
                             "s-router:change"
                           ) // call the handler function for the route
 
-                          _context2.next = 29
+                          _context2.next = 37
                           return sroute.handler(
                             params,
                             $source || window.history
                           )
 
-                        case 29:
+                        case 37:
                           if (!sroute.hooks.after) {
-                            _context2.next = 32
+                            _context2.next = 40
                             break
                           }
 
-                          _context2.next = 32
+                          _context2.next = 40
                           return sroute.hooks.after(
                             params,
                             $source || window.history
                           )
 
-                        case 32:
+                        case 40:
+                          if (!_hooks.after) {
+                            _context2.next = 43
+                            break
+                          }
+
+                          _context2.next = 43
+                          return _hooks.after(params, $source || window.history)
+
+                        case 43:
                         case "end":
                           return _context2.stop()
                       }

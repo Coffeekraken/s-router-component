@@ -6,6 +6,15 @@ function setContent(content) {
   document.querySelector(".content").innerHTML = content
 }
 
+SRouterComponent.hooks({
+  before: (params, source) => {
+    console.log("BEFORE", params, source)
+  },
+  after: (params, source) => {
+    console.log("AFTER", params, source)
+  }
+})
+
 SRouterComponent.on(
   "/",
   (params, source) => {

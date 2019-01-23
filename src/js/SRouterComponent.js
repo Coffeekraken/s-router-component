@@ -28,6 +28,7 @@ class SRoute {
 
 // some internal variables
 const _routes = {}
+let _hooks = {} // save the generic hooks
 let _clickedItem = null // the last s-router link clicked
 let _previousRouteParamsSource = null // save the previous route
 let _minorChange = false // true mean that the change made is minor and does not need to trigger an actual route update
@@ -166,6 +167,21 @@ export default class SRouterComponent extends native(window.HTMLAnchorElement) {
   }
 
   /**
+   * Specify some generic hooks like `before` and `after`
+   * @param    {Object}    hooks    An object of hooks
+   * @return    {SRouterComponent}    The SRouterComponent class to maintain chainability
+   */
+  static hooks(hooks) {
+    // save the hooks in the stack
+    _hooks = {
+      ..._hooks,
+      ...hooks
+    }
+    // maintain chainability
+    return this
+  }
+
+  /**
    * When the url has been updated either by a click on back button, or by a click on
    * an `s-router` link
    */
@@ -195,6 +211,23 @@ export default class SRouterComponent extends native(window.HTMLAnchorElement) {
 
     // save the $source of the change
     const $source = _clickedItem
+
+    // check if this is a generic before hook
+    if (_hooks.before) {
+      const genericBeforeResult = await _hooks.before(
+        params,
+        $source || window.history
+      )
+      if (genericBeforeResult === false) {
+        // flag the update as minor
+        // to avoid triggering an actual route change
+        _minorChange = true
+        // go back in history
+        window.history.go(-1)
+        // stop here
+        return
+      }
+    }
 
     // check if this route has a before hook
     if (sroute.hooks.before) {
@@ -253,6 +286,11 @@ export default class SRouterComponent extends native(window.HTMLAnchorElement) {
     // call the after hook if exist
     if (sroute.hooks.after) {
       await sroute.hooks.after(params, $source || window.history)
+    }
+
+    // call the generic after hook if exist
+    if (_hooks.after) {
+      await _hooks.after(params, $source || window.history)
     }
   }
 

@@ -1,6 +1,6 @@
 {
   "name": "coffeekraken-s-router-component",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "A simple but powerful router webcomponent with full route lifecycle (before, handler, after, leave)",
   "main": "dist/index.js",
   "homepage": "http://coffeekraken.io",

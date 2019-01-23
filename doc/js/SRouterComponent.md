@@ -107,6 +107,20 @@ Stop listen for changes
 
 **Static**
 
+### hooks
+
+Specify some generic hooks like `before` and `after`
+
+#### Parameters
+
+| Name  | Type                                                                                                   | Description        | Status   | Default |
+| ----- | ------------------------------------------------------------------------------------------------------ | ------------------ | -------- | ------- |
+| hooks | **{ [Object](https://developer.mozilla.org/fr/docs/Web/JavaScript/Reference/Objets_globaux/Object) }** | An object of hooks | required |
+
+Return **{ SRouterComponent }** The SRouterComponent class to maintain chainability
+
+**Static**
+
 ## Events
 
 ### s-router:change
