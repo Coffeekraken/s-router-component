@@ -2,11 +2,15 @@ import "babel-polyfill"
 import "coffeekraken-sugar/js/features/all"
 import SRouterComponent from "../../../dist/index"
 
+function setContent(content) {
+  document.querySelector(".content").innerHTML = content
+}
+
 SRouterComponent.on(
   "/",
-  async (params, source) => {
+  (params, source) => {
     console.log("Welcome", params, source)
-    return true
+    setContent("WELCOME")
   },
   {
     leave: async (params, source) => {
@@ -17,34 +21,23 @@ SRouterComponent.on(
   .on(
     ["/home", "/home/:id/:plop"],
     (params, source) => {
-      return new Promise(resolve => {
-        console.log("handle route home", params, source)
-        setTimeout(() => {
-          resolve()
-        }, 3000)
-      })
+      console.log("handle route home", params, source)
+      setContent("HOME")
     },
     {
       before: async (params, source) => {
         console.log("before home")
-        return false
-      },
-      after: (params, source) => {
-        console.log("after home", params)
+        // return false
       }
     }
   )
   .on("/about", (params, source) => {
-    return new Promise(resolve => {
-      console.log("handle route about", params)
-      resolve()
-    })
+    console.log("handle route about", params)
+    setContent("ABOUT")
   })
   .notFound((params, source) => {
-    return new Promise(resolve => {
-      console.log("not found", params, source)
-      resolve()
-    })
+    setContent("NOT FOUND")
+    console.log("not found", params, source)
   })
   .listen()
 

@@ -4,6 +4,7 @@ import zip from "lodash/zip"
 import fromPairs from "lodash/fromPairs"
 import dispatchEvent from "coffeekraken-sugar/js/dom/dispatchEvent"
 import queryStringToObject from "coffeekraken-sugar/js/utils/strings/queryStringToObject"
+import urlParse from "url-parse"
 
 class SRoute {
   constructor(route, handler, hooks = {}) {
@@ -25,15 +26,26 @@ class SRoute {
   }
 }
 
-function timeout(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
-
 // some internal variables
 const _routes = {}
 let _clickedItem = null // the last s-router link clicked
 let _previousRouteParamsSource = null // save the previous route
+let _minorChange = false // true mean that the change made is minor and does not need to trigger an actual route update
 
+/**
+ * A simple but powerful router webcomponent with full route lifecycle (before, handler, after, leave)
+ *
+ * @example    js
+ * SRouterComponent.on("/", async (params, source) => {
+ *   // do something here...
+ * })
+ * .on("/user/:id", async (params, source) => {
+ *   // do something here...
+ * })
+ * .listen() // start listening for routes changes
+ *
+ * @author    Olivier Bossel <olivier.bossel@gmail.com> (https://olivierbossel.com)
+ */
 export default class SRouterComponent extends native(window.HTMLAnchorElement) {
   /**
    * Default props
@@ -57,9 +69,9 @@ export default class SRouterComponent extends native(window.HTMLAnchorElement) {
     const routes = [].concat(route)
 
     // loop on each routes to register
-    routes.forEach(route => {
+    routes.forEach(rt => {
       // register new route
-      _routes[route] = new SRoute(route, handler, hooks)
+      _routes[rt] = new SRoute(rt, handler, hooks)
     })
 
     // maintain chainability
@@ -83,6 +95,26 @@ export default class SRouterComponent extends native(window.HTMLAnchorElement) {
   }
 
   /**
+   * Go forward
+   * @param    {Integer}    [by=1]    How many steprs to go forward in history
+   * @return    {SRouterComponent}    The SRouterComponent class to maintain chainability
+   */
+  static goForward(by = 1) {
+    window.history.go(by)
+    return this
+  }
+
+  /**
+   * Go backward
+   * @param    {Integer}    [by=1]    How many steprs to go back in history
+   * @return    {SRouterComponent}    The SRouterComponent class to maintain chainability
+   */
+  static goBackward(by = 1) {
+    window.history.go(by * -1)
+    return this
+  }
+
+  /**
    * Register the not found (404) route
    * @param    {Function}     handler    The handler function. Need to return a promise that need to be resolved when the change has been made
    * @param    {Object}    [hooks={}]    An object with some functions hooks. Available hooks: `before`, `after` and `leave`
@@ -99,10 +131,35 @@ export default class SRouterComponent extends native(window.HTMLAnchorElement) {
    */
   static listen() {
     // add popstate event
-    addEventListener(window, "popstate", this._popStateHandler.bind(this))
+    this._removePopStateEventHandler = addEventListener(
+      window,
+      "popstate",
+      () => {
+        // check if the change is a minor one
+        // meaning that we don't need to make an actuel
+        // route change lifecycle process
+        if (_minorChange) {
+          _minorChange = false
+          return
+        }
+
+        this._popStateHandler()
+      }
+    )
 
     // first check
     this._popStateHandler()
+
+    // maintain chainability
+    return this
+  }
+
+  /**
+   * Stop listen for changes
+   */
+  static stop() {
+    // remove the popstate event handler
+    if (this._removePopStateEventHandler) this._removePopStateEventHandler()
 
     // maintain chainability
     return this
@@ -131,8 +188,30 @@ export default class SRouterComponent extends native(window.HTMLAnchorElement) {
       params.$qs = queryString
     }
 
+    // process hash
+    if (document.location.hash) {
+      params.$hash = document.location.hash
+    }
+
     // save the $source of the change
     const $source = _clickedItem
+
+    // check if this route has a before hook
+    if (sroute.hooks.before) {
+      const beforeResult = await sroute.hooks.before(
+        params,
+        $source || window.history
+      )
+      if (beforeResult === false) {
+        // flag the update as minor
+        // to avoid triggering an actual route change
+        _minorChange = true
+        // go back in history
+        window.history.go(-1)
+        // stop here
+        return
+      }
+    }
 
     // check if has a previous route
     if (
@@ -144,8 +223,12 @@ export default class SRouterComponent extends native(window.HTMLAnchorElement) {
         _previousRouteParamsSource.source || window.history
       )
       if (previousRouteLeaveResult === false) {
+        // flag the update as minor
+        // to avoid triggering an actual route change
+        _minorChange = true
         // go back in history
         window.history.go(-1)
+        // stop here
         return
       }
     }
@@ -157,58 +240,20 @@ export default class SRouterComponent extends native(window.HTMLAnchorElement) {
       params: foundRoute.params
     }
 
-    // add class to the source element if exist
-    if ($source) $source.classList.add("loading")
-
-    // check if this route has a before hook
-    if (sroute.hooks.before) {
-      const beforeResult = await sroute.hooks.before(
-        params,
-        $source || window.history
-      )
-      if (beforeResult === false) {
-        // go back in history
-        window.history.go(-1)
-        return
-      }
-    }
-
-    // set the active state class
-    this._setActiveState()
+    /**
+     * @event
+     * @name    s-router:change
+     * Event dispatched on the body to notify the app of a route change
+     */
+    dispatchEvent(document.body, "s-router:change")
 
     // call the handler function for the route
-    await sroute.handler(params, _clickedItem || window.history)
-
-    // remove the class on the clicked item if exist
-    if ($source) $source.classList.remove("loading")
+    await sroute.handler(params, $source || window.history)
 
     // call the after hook if exist
-    if (sroute.hooks.after)
-      sroute.hooks.after(params, $source || window.history)
-  }
-
-  /**
-   * Set the components active status
-   */
-  static _setActiveState() {
-    // query all the s-router elements
-    const $links = document.querySelectorAll('a[is="s-router"]')
-    // loop on each links
-    Array.from($links).forEach($link => {
-      // check if the link match the location
-      const href = $link.getAttribute("href")
-      const regexpStr = href.replace(/\//g, "\\/")
-      if (document.location.pathname === href) {
-        $link.classList.remove("active-within")
-        $link.classList.add("active")
-      } else if (document.location.pathname.match(new RegExp(regexpStr))) {
-        $link.classList.remove("active")
-        $link.classList.add("active-within")
-      } else {
-        $link.classList.remove("active")
-        $link.classList.remove("active-within")
-      }
-    })
+    if (sroute.hooks.after) {
+      await sroute.hooks.after(params, $source || window.history)
+    }
   }
 
   /**
@@ -309,6 +354,19 @@ export default class SRouterComponent extends native(window.HTMLAnchorElement) {
       "click",
       this._clickHandler
     )
+
+    // listen for change on the body
+    this._removeChangeHandler = addEventListener(
+      document.body,
+      "s-router:change",
+      () => {
+        // set the state classes
+        this._setActiveStateClasses()
+      }
+    )
+
+    // first check of active state
+    this._setActiveStateClasses()
   }
 
   /**
@@ -339,8 +397,23 @@ export default class SRouterComponent extends native(window.HTMLAnchorElement) {
     // prevent default behavior
     e.preventDefault()
 
-    // stop here if the href is already the setted route
-    if (this.getAttribute("href") === document.location.pathname) return
+    // parse the href
+    const urlObj = urlParse(this.getAttribute("href"))
+
+    // check if the pathname is the same as the actual current one
+    // to stop here if needed
+    if (urlObj.pathname === document.location.pathname) {
+      // take care of anchor and qs if needed
+      // if (urlObj.query) document.location.search = urlObj.query
+      if (urlObj.hash) {
+        // flag the change as minor
+        _minorChange = true
+        // update the hash in the url
+        document.location.hash = urlObj.hash
+      }
+      // stop here cause we don't change the actual route
+      return
+    }
 
     // save the clicked item in the external variable
     // to pass it then in the handler function
@@ -354,5 +427,27 @@ export default class SRouterComponent extends native(window.HTMLAnchorElement) {
 
     // dispatch a popstate event
     dispatchEvent(window, "popstate")
+  }
+
+  /**
+   * Set the components active status classes
+   */
+  _setActiveStateClasses() {
+    // check if the link match the location
+    const href = this.getAttribute("href").split(/\?|#/)[0]
+    const regexpStr = href.replace(/\//g, "\\/")
+    if (document.location.pathname === href) {
+      this.classList.remove("active-within")
+      this.classList.add("active")
+    } else if (
+      href !== "/" &&
+      document.location.pathname.match(new RegExp(regexpStr))
+    ) {
+      this.classList.remove("active")
+      this.classList.add("active-within")
+    } else {
+      this.classList.remove("active")
+      this.classList.remove("active-within")
+    }
   }
 }
