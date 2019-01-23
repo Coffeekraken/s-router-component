@@ -35,13 +35,18 @@
 2. [Install](#readme-install)
 3. [Get Started](#readme-get-started)
 4. [Javascript API](doc/js)
-5. [SASS API](doc/sass)
-6. [Sugar Web Components Documentation](https://github.com/coffeekraken/sugar/blob/master/doc/webcomponent.md)
-7. [Browsers support](#readme-browsers-support)
-8. [Code linting](#readme-code-linting)
-9. [Contribute](#readme-contribute)
-10. [Who are Coffeekraken?](#readme-who-are-coffeekraken)
-11. [Licence](#readme-license)
+5. [Handler function](#readme-handler)
+6. [Url parameters](#readme-params)
+7. [Source parameter](#readme-source)
+8. [Hooks](#readme-hooks)
+9. [Lifecycle](#readme-lifecycle)
+10. [Classes](#readme-classes)
+11. [Sugar Web Components Documentation](https://github.com/coffeekraken/sugar/blob/master/doc/webcomponent.md)
+12. [Browsers support](#readme-browsers-support)
+13. [Code linting](#readme-code-linting)
+14. [Contribute](#readme-contribute)
+15. [Who are Coffeekraken?](#readme-who-are-coffeekraken)
+16. [Licence](#readme-license)
 
 <a name="readme-install"></a>
 
@@ -70,7 +75,7 @@ SRouterComponent.on("/", async (params, source) => {
   .on("/user/:id", async (params, source) => {
     // do something here...
   })
-  .listen()
+  .listen() // start listening for routes changes
 ```
 
 Then simply use it inside your html like so:
@@ -88,22 +93,22 @@ The handler functions are the main concept of this router implementation. Each r
 Here's an example:
 
 ```js
-SRouterComponent.on("/path", async (params, source) => {
+SRouterComponent.on("/path", (params, source) => {
   // I'm the handler function of the /path route
-})
+}).listen()
 ```
 
-You probably notices that the handler functions are marked as `async`. This mean that you can do some asyncronous tasks in them and return `true` at the end to resolve them.
+### Not found handler
 
-Here's an example:
+You can register a not found handler easily by doing this:
 
 ```js
-SRouterComponent.on('/user/:id', async (params, source) => {
-  // fetch the user infos for example...
-  const user = await //...
-  // resolve the route
-  return true
-})
+SRouterComponent
+  // your routes...
+  .notFound((params, source) => {
+    // do something on 404
+  })
+  .listen()
 ```
 
 <a id="readme-params"></a>
@@ -124,6 +129,8 @@ SRouterComponent.on("/user/:id", (params, source) => {
   console.log(params.id) // will output `10`
 }).listen()
 ```
+
+> The urls support also the `*` wildcard that you can use like so : `/my/*/route`
 
 <a id="readme-source"></a>
 
@@ -154,7 +161,7 @@ SRouterComponent.on(
     // do something to display the admin here...
   },
   {
-    before: async (params, source) => {
+    before: (params, source) => {
       if (!isUserLogged()) return false // block the user here is he's not logged in
     },
     after: (params, source) => {
@@ -164,8 +171,20 @@ SRouterComponent.on(
       // clear some things, etc...
     }
   }
-)
+).listen()
 ```
+
+> Each hooks can be marked as `async` or return simply a `Promise`. Be careful, use this if you know what you are doing... Introducing asyncronous tasks inside a router can lead to tricky issues to debug.
+
+<a id="readme-lifecycle"></a>
+
+## Change route lifecycle
+
+Here's a schema of a route change in order to understand the lifecycle:
+
+![Change route lifecycle](.resources/lifecycle.jpg)
+
+You can see that the `/home before` is run **before** the `/about leave`. This mean that if your `/home before` hook return `false`, the previous route which is `/about` won't have his `leave` hook called
 
 <a id="readme-classes"></a>
 
@@ -173,9 +192,8 @@ SRouterComponent.on(
 
 To make things easy to work with, the router add some classes on each `s-router` links during his lifecycle. Here's the list of classes:
 
-1. `loading`: Added during the `before` and the `handler` phase. It will be removed when the `handler` function is resolved
-2. `active`: Added on the links that match exactly the current route
-3. `active-within`: Added on the links that are "parent" of the current route. Ex: /user is parent of /user/12
+1. `active`: Added on the links that match exactly the current route
+2. `active-within`: Added on the links that are "parent" of the current route. Ex: `/user` is parent of `/user/12`
 
 <a id="readme-browsers-support"></a>
 

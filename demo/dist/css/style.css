@@ -207,16 +207,21 @@
   width: 100%;
 }
 
-.clearfix, .clearfix-micro {
+.clearfix,
+.clearfix-micro {
   zoom: 1;
 }
 
-.clearfix:before, .clearfix-micro:before, .clearfix:after, .clearfix-micro:after {
+.clearfix:before,
+.clearfix-micro:before,
+.clearfix:after,
+.clearfix-micro:after {
   content: " ";
   display: table;
 }
 
-.clearfix:after, .clearfix-micro:after {
+.clearfix:after,
+.clearfix-micro:after {
   clear: both;
 }
 
@@ -2239,7 +2244,8 @@
 	 */
 }
 
-.clearfix, .clearfix-micro {
+.clearfix,
+.clearfix-micro {
   /**
 	 * @name 		```.clearfix```
 	 * Apply the micro clearfix on the element
@@ -2297,7 +2303,7 @@
 }
 
 .ratio-21-9:before {
-  content: '';
+  content: "";
   display: block;
   height: 0;
   padding-top: 42.85714%;
@@ -2316,7 +2322,7 @@
 }
 
 .ratio-16-9:before {
-  content: '';
+  content: "";
   display: block;
   height: 0;
   padding-top: 56.25%;
@@ -2335,7 +2341,7 @@
 }
 
 .ratio-4-3:before {
-  content: '';
+  content: "";
   display: block;
   height: 0;
   padding-top: 75%;
@@ -2354,7 +2360,7 @@
 }
 
 .ratio-1-1:before {
-  content: '';
+  content: "";
   display: block;
   height: 0;
   padding-top: 100%;
@@ -2373,7 +2379,9 @@
 	 */
 }
 
-.no-transitions, .no-transitions:before, .no-transitions:after {
+.no-transitions,
+.no-transitions:before,
+.no-transitions:after {
   transition: none !important;
 }
 
@@ -2390,8 +2398,12 @@
 	 */
 }
 
-.clear-transitions, .clear-transitions:before, .clear-transitions:after,
-.clear-transitions *, .clear-transitions *:before, .clear-transitions *:after {
+.clear-transitions,
+.clear-transitions:before,
+.clear-transitions:after,
+.clear-transitions *,
+.clear-transitions *:before,
+.clear-transitions *:after {
   transition: none !important;
 }
 
@@ -2408,7 +2420,9 @@
 	 */
 }
 
-.no-animations, .no-animations:before, .no-animations:after {
+.no-animations,
+.no-animations:before,
+.no-animations:after {
   animation: none !important;
 }
 
@@ -2425,8 +2439,12 @@
 	 */
 }
 
-.clear-animations, .clear-animations:before, .clear-animations:after,
-.clear-animations *, .clear-animations *:before, .clear-animations *:after {
+.clear-animations,
+.clear-animations:before,
+.clear-animations:after,
+.clear-animations *,
+.clear-animations *:before,
+.clear-animations *:after {
   animation: none !important;
 }
 
@@ -2443,7 +2461,9 @@
 	 */
 }
 
-.no-transmations, .no-transmations:before, .no-transmations:after {
+.no-transmations,
+.no-transmations:before,
+.no-transmations:after {
   transition: none !important;
   animation: none !important;
 }
@@ -2461,8 +2481,12 @@
 	 */
 }
 
-.clear-transmations, .clear-transmations:before, .clear-transmations:after,
-.clear-transmations *, .clear-transmations *:before, .clear-transmations *:after {
+.clear-transmations,
+.clear-transmations:before,
+.clear-transmations:after,
+.clear-transmations *,
+.clear-transmations *:before,
+.clear-transmations *:after {
   transition: none !important;
   animation: none !important;
 }
@@ -2662,7 +2686,87 @@
  *
  * @author 			Olivier Bossel <olivier.bossel@gmail.com> (https://olivierbossel.com)
  */
-html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
+html,
+body,
+div,
+span,
+applet,
+object,
+iframe,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+pre,
+a,
+abbr,
+acronym,
+address,
+big,
+cite,
+code,
+del,
+dfn,
+em,
+img,
+ins,
+kbd,
+q,
+s,
+samp,
+small,
+strike,
+strong,
+sub,
+sup,
+tt,
+var,
+b,
+u,
+i,
+center,
+dl,
+dt,
+dd,
+ol,
+ul,
+li,
+fieldset,
+form,
+label,
+legend,
+table,
+caption,
+tbody,
+tfoot,
+thead,
+tr,
+th,
+td,
+article,
+aside,
+canvas,
+details,
+embed,
+figure,
+figcaption,
+footer,
+header,
+hgroup,
+menu,
+nav,
+output,
+ruby,
+section,
+summary,
+time,
+mark,
+audio,
+video {
   margin: 0;
   padding: 0;
   border: 0;
@@ -2671,7 +2775,17 @@ html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockq
   vertical-align: baseline;
 }
 
-article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+menu,
+nav,
+section {
   display: block;
 }
 
@@ -2679,21 +2793,25 @@ body {
   line-height: 1;
 }
 
-ol, ul {
+ol,
+ul {
   list-style: none;
 }
 
-blockquote, q {
+blockquote,
+q {
   quotes: none;
 }
 
-blockquote:before, blockquote:after {
-  content: '';
+blockquote:before,
+blockquote:after {
+  content: "";
   content: none;
 }
 
-q:before, q:after {
-  content: '';
+q:before,
+q:after {
+  content: "";
   content: none;
 }
 
@@ -2771,7 +2889,9 @@ html {
   box-sizing: border-box;
 }
 
-*, *:before, *:after {
+*,
+*:before,
+*:after {
   box-sizing: inherit;
 }
 
@@ -2780,7 +2900,7 @@ a {
 }
 
 html {
-  font-size: 14Px;
+  font-size: 14px;
   color: #848e91;
   font-family: "Helvetica Neue", Helvetica, Verdana, Arial, sans-serif;
   font-weight: normal;
@@ -4186,4 +4306,12 @@ body {
 
 body {
   padding: 7.14286rem;
+}
+
+a.active {
+  color: #f2bc2b;
+}
+
+a.active-within {
+  color: #2199e8;
 }

@@ -1,12 +1,12 @@
 {
-  "name": "coffeekraken-s-component-name-component",
-  "version": "1.0.0",
-  "description": "component-description",
+  "name": "coffeekraken-s-router-component",
+  "version": "0.0.9",
+  "description": "A simple but powerful router webcomponent with full route lifecycle (before, handler, after, leave)",
   "main": "dist/index.js",
   "homepage": "http://coffeekraken.io",
   "repository": {
     "type": "git",
-    "url": "https://github.com/coffeekraken/s-{component-name}-component"
+    "url": "https://github.com/coffeekraken/s-router-component"
   },
   "watch": {
     "doc:js": {
@@ -77,7 +77,8 @@
   },
   "dependencies": {
     "coffeekraken-sugar": "^1.0.47",
-    "lodash": "^4.17.11"
+    "lodash": "^4.17.11",
+    "url-parse": "^1.4.4"
   },
   "devDependencies": {
     "@babel/cli": "^7.1.2",
