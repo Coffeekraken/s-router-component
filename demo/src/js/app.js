@@ -8,7 +8,13 @@ function setContent(content) {
 
 SRouterComponent.hooks({
   before: (params, source) => {
-    console.log("BEFORE", params, source)
+    return new Promise(resolve => {
+      console.log("BEFORE", params, source)
+
+      setTimeout(() => {
+        resolve()
+      }, 4000)
+    })
   },
   after: (params, source) => {
     console.log("AFTER", params, source)

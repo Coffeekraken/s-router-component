@@ -29,6 +29,7 @@ class SRoute {
 // some internal variables
 const _routes = {}
 let _hooks = {} // save the generic hooks
+let _genericBeforePromise = false
 let _clickedItem = null // the last s-router link clicked
 let _previousRouteParamsSource = null // save the previous route
 let _minorChange = false // true mean that the change made is minor and does not need to trigger an actual route update
@@ -209,15 +210,24 @@ export default class SRouterComponent extends native(window.HTMLAnchorElement) {
       params.$hash = document.location.hash
     }
 
+    // pathname
+    params.$pathname = document.location.pathname
+    params.$host = document.location.host
+    params.$hostname = document.location.hostname
+    params.$href = document.location.href
+    params.$port = document.location.port
+    params.$protocol = document.location.protocol
+
     // save the $source of the change
     const $source = _clickedItem
 
     // check if this is a generic before hook
-    if (_hooks.before) {
-      const genericBeforeResult = await _hooks.before(
-        params,
-        $source || window.history
-      )
+    if (_genericBeforePromise) {
+      await _genericBeforePromise
+    } else if (_hooks.before && !_genericBeforePromise) {
+      _genericBeforePromise = _hooks.before(params, $source || window.history)
+      const genericBeforeResult = await _genericBeforePromise
+      _genericBeforePromise = false
       if (genericBeforeResult === false) {
         // flag the update as minor
         // to avoid triggering an actual route change
@@ -227,6 +237,11 @@ export default class SRouterComponent extends native(window.HTMLAnchorElement) {
         // stop here
         return
       }
+    }
+
+    // if this is not the actual route anymore
+    if (params.$pathname !== document.location.pathname) {
+      return
     }
 
     // check if this route has a before hook
@@ -266,6 +281,11 @@ export default class SRouterComponent extends native(window.HTMLAnchorElement) {
       }
     }
 
+    // if this is not the actual route anymore
+    if (params.$pathname !== document.location.pathname) {
+      return
+    }
+
     // save the previous route
     _previousRouteParamsSource = {
       source: $source,
@@ -283,9 +303,19 @@ export default class SRouterComponent extends native(window.HTMLAnchorElement) {
     // call the handler function for the route
     await sroute.handler(params, $source || window.history)
 
+    // if this is not the actual route anymore
+    if (params.$pathname !== document.location.pathname) {
+      return
+    }
+
     // call the after hook if exist
     if (sroute.hooks.after) {
       await sroute.hooks.after(params, $source || window.history)
+    }
+
+    // if this is not the actual route anymore
+    if (params.$pathname !== document.location.pathname) {
+      return
     }
 
     // call the generic after hook if exist

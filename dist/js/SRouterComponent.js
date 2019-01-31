@@ -246,6 +246,7 @@ var SRoute =
 var _routes = {}
 var _hooks = {} // save the generic hooks
 
+var _genericBeforePromise = false
 var _clickedItem = null // the last s-router link clicked
 
 var _previousRouteParamsSource = null // save the previous route
@@ -671,26 +672,48 @@ var SRouterComponent =
 
                           if (document.location.hash) {
                             params.$hash = document.location.hash
-                          } // save the $source of the change
+                          } // pathname
+
+                          params.$pathname = document.location.pathname
+                          params.$host = document.location.host
+                          params.$hostname = document.location.hostname
+                          params.$href = document.location.href
+                          params.$port = document.location.port
+                          params.$protocol = document.location.protocol // save the $source of the change
 
                           $source = _clickedItem // check if this is a generic before hook
 
-                          if (!_hooks.before) {
-                            _context2.next = 17
+                          if (!_genericBeforePromise) {
+                            _context2.next = 20
                             break
                           }
 
-                          _context2.next = 12
-                          return _hooks.before(
+                          _context2.next = 18
+                          return _genericBeforePromise
+
+                        case 18:
+                          _context2.next = 30
+                          break
+
+                        case 20:
+                          if (!(_hooks.before && !_genericBeforePromise)) {
+                            _context2.next = 30
+                            break
+                          }
+
+                          _genericBeforePromise = _hooks.before(
                             params,
                             $source || window.history
                           )
+                          _context2.next = 24
+                          return _genericBeforePromise
 
-                        case 12:
+                        case 24:
                           genericBeforeResult = _context2.sent
+                          _genericBeforePromise = false
 
                           if (!(genericBeforeResult === false)) {
-                            _context2.next = 17
+                            _context2.next = 30
                             break
                           }
 
@@ -702,23 +725,33 @@ var SRouterComponent =
 
                           return _context2.abrupt("return")
 
-                        case 17:
-                          if (!sroute.hooks.before) {
-                            _context2.next = 25
+                        case 30:
+                          if (
+                            !(params.$pathname !== document.location.pathname)
+                          ) {
+                            _context2.next = 32
                             break
                           }
 
-                          _context2.next = 20
+                          return _context2.abrupt("return")
+
+                        case 32:
+                          if (!sroute.hooks.before) {
+                            _context2.next = 40
+                            break
+                          }
+
+                          _context2.next = 35
                           return sroute.hooks.before(
                             params,
                             $source || window.history
                           )
 
-                        case 20:
+                        case 35:
                           beforeResult = _context2.sent
 
                           if (!(beforeResult === false)) {
-                            _context2.next = 25
+                            _context2.next = 40
                             break
                           }
 
@@ -730,28 +763,28 @@ var SRouterComponent =
 
                           return _context2.abrupt("return")
 
-                        case 25:
+                        case 40:
                           if (
                             !(
                               _previousRouteParamsSource &&
                               _previousRouteParamsSource.sroute.hooks.leave
                             )
                           ) {
-                            _context2.next = 33
+                            _context2.next = 48
                             break
                           }
 
-                          _context2.next = 28
+                          _context2.next = 43
                           return _previousRouteParamsSource.sroute.hooks.leave(
                             _previousRouteParamsSource.params,
                             _previousRouteParamsSource.source || window.history
                           )
 
-                        case 28:
+                        case 43:
                           previousRouteLeaveResult = _context2.sent
 
                           if (!(previousRouteLeaveResult === false)) {
-                            _context2.next = 33
+                            _context2.next = 48
                             break
                           }
 
@@ -763,7 +796,17 @@ var SRouterComponent =
 
                           return _context2.abrupt("return")
 
-                        case 33:
+                        case 48:
+                          if (
+                            !(params.$pathname !== document.location.pathname)
+                          ) {
+                            _context2.next = 50
+                            break
+                          }
+
+                          return _context2.abrupt("return")
+
+                        case 50:
                           // save the previous route
                           _previousRouteParamsSource = {
                             source: $source,
@@ -780,34 +823,54 @@ var SRouterComponent =
                             "s-router:change"
                           ) // call the handler function for the route
 
-                          _context2.next = 37
+                          _context2.next = 54
                           return sroute.handler(
                             params,
                             $source || window.history
                           )
 
-                        case 37:
-                          if (!sroute.hooks.after) {
-                            _context2.next = 40
+                        case 54:
+                          if (
+                            !(params.$pathname !== document.location.pathname)
+                          ) {
+                            _context2.next = 56
                             break
                           }
 
-                          _context2.next = 40
+                          return _context2.abrupt("return")
+
+                        case 56:
+                          if (!sroute.hooks.after) {
+                            _context2.next = 59
+                            break
+                          }
+
+                          _context2.next = 59
                           return sroute.hooks.after(
                             params,
                             $source || window.history
                           )
 
-                        case 40:
-                          if (!_hooks.after) {
-                            _context2.next = 43
+                        case 59:
+                          if (
+                            !(params.$pathname !== document.location.pathname)
+                          ) {
+                            _context2.next = 61
                             break
                           }
 
-                          _context2.next = 43
+                          return _context2.abrupt("return")
+
+                        case 61:
+                          if (!_hooks.after) {
+                            _context2.next = 64
+                            break
+                          }
+
+                          _context2.next = 64
                           return _hooks.after(params, $source || window.history)
 
-                        case 43:
+                        case 64:
                         case "end":
                           return _context2.stop()
                       }
